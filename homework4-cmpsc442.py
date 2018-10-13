@@ -2,14 +2,14 @@
 # CMPSC442: Homework 4
 ############################################################
 
-student_name = "Type your full name here."
+student_name = "Qiyi Shan"
 
 ############################################################
 # Imports
 ############################################################
 
 # Include your imports here, if any are used.
-
+import collections, copy, itertools
 
 
 ############################################################
@@ -19,14 +19,16 @@ student_name = "Type your full name here."
 def sudoku_cells():
     pass
 
+
 def sudoku_arcs():
     pass
+
 
 def read_board(path):
     pass
 
-class Sudoku(object):
 
+class Sudoku(object):
     CELLS = sudoku_cells()
     ARCS = sudoku_arcs()
 
@@ -47,6 +49,7 @@ class Sudoku(object):
 
     def infer_with_guessing(self):
         pass
+
 
 ############################################################
 # Section 2: Feedback
