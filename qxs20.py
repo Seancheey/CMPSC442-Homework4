@@ -71,14 +71,32 @@ class Sudoku(object):
                 return True
         return False
 
+    def neighbor(self, cell):
+        row, col = cell
+        box_row = row // 3
+        box_col = col // 3
+        return {(r, c) for r in range(box_row * 3, box_row * 3 + 3) for c in range(box_col * 3, box_col * 3 + 3)} | \
+               {(row, c) for c in range(9)} | \
+               {(r, col) for r in range(9)}
+
     def infer_ac3(self):
-        pass
+        queue = collections.deque()
+        for arc in Sudoku.ARCS:
+            queue.append(arc)
+        while len(queue) != 0:
+            xi, xj = queue.popleft()
+            if self.remove_inconsistent_values(xi, xj):
+                for xk in self.neighbor(xi) - {xj}:
+                    queue.append((xk, xi))
 
     def infer_improved(self):
         pass
 
     def infer_with_guessing(self):
         pass
+
+    def __str__(self):
+        return "".join([str(next(iter(self.board[(r, c)]))) for r in range(9) for c in range(9)])
 
 
 ############################################################
