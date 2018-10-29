@@ -137,12 +137,9 @@ class Sudoku(object):
     def infer_with_guessing(self):
         self.rec_infer()
 
-    def __str__(self):
-        return self._simple_board()
-
     def _simple_board(self):
-        return "\n".join(
-            [" ".join([str(next(iter(self.board[(r, c)]))) if len(self.board[(r, c)]) == 1 else "_" for c in range(9)])
+        return "".join(
+            ["".join([str(next(iter(self.board[(r, c)]))) if len(self.board[(r, c)]) == 1 else "_" for c in range(9)])
              for r in range(9)])
 
     def _detail_board(self):
