@@ -113,8 +113,31 @@ class Sudoku(object):
                     if self.remove_extra_value(cell):
                         got_anything = True
 
+    def successors(self):
+        min_suc_cell = min(self.board, key=lambda x: len(self.board[x]) if len(self.board[x]) > 1 else 100)
+        # print "min_suc:", min_suc_cell
+        for num in self.board[min_suc_cell]:
+            new_board = KnownSudoku({(cell[0], cell[1]): {e for e in val} for cell, val in self.board.items()})
+            # set the number at the cell
+            new_board.board[min_suc_cell] = {num}
+            for neig in new_board.neighbor(min_suc_cell):
+                new_board.board[neig] -= {num}
+            yield new_board
+
+    def rec_infer(self):
+        self.infer_improved()
+        if self.conflict():
+            return False
+        if self.solved():
+            return True
+        else:
+            for new_board in self.successors():
+                if new_board.rec_infer():
+                    self.board = new_board.board
+                    return True
+
     def infer_with_guessing(self):
-        pass
+        self.rec_infer()
 
     def __str__(self):
         return self._simple_board()
@@ -136,11 +159,17 @@ class Sudoku(object):
         return out
 
     def solved(self):
-        for r in range(9):
-            for c in range(9):
-                if len(self.board[(r, c)]) > 1:
-                    return False
-        return True
+        return all([True if len(nums) == 1 else False for nums in self.board.values()])
+
+    def conflict(self):
+        return any([True if len(nums) == 0 else False for nums in self.board.values()])
+
+
+class KnownSudoku(Sudoku):
+
+    def __init__(self, board):
+        super(KnownSudoku, self).__init__([])
+        self.board = board
 
 
 ############################################################
