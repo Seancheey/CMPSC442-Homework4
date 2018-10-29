@@ -10,6 +10,7 @@ student_name = "Qiyi Shan"
 
 # Include your imports here, if any are used.
 import collections, copy, itertools
+from timeit import timeit
 
 
 ############################################################
@@ -40,25 +41,8 @@ class Sudoku(object):
     __slots__ = "board"
 
     def __init__(self, board):
-        self.board = {(r, c): {ele} if ele != 0 else {1, 2, 3, 4, 5, 6, 7, 8, 9} for r, row in enumerate(board) for
-                      c, ele
-                      in enumerate(row)}
-
-    # get the cell's box
-    def box(self, row, col):
-        box_row = row // 3
-        box_col = col // 3
-        for r in range(box_row * 3, box_row * 3 + 3):
-            for c in range(box_col * 3, box_col * 3 + 3):
-                yield self.board[r][c]
-
-    def row(self, row):
-        for c in range(9):
-            yield self.board[row][c]
-
-    def col(self, col):
-        for r in range(9):
-            yield self.board[r][col]
+        self.board = {(r, c): {ele} if ele != 0 else {1, 2, 3, 4, 5, 6, 7, 8, 9}
+                      for r, row in enumerate(board) for c, ele in enumerate(row)}
 
     def get_values(self, cell):
         return self.board[cell]
@@ -75,14 +59,43 @@ class Sudoku(object):
         row, col = cell
         box_row = row // 3
         box_col = col // 3
-        return {(r, c) for r in range(box_row * 3, box_row * 3 + 3) for c in range(box_col * 3, box_col * 3 + 3)} | \
-               {(row, c) for c in range(9)} | \
-               {(r, col) for r in range(9)}
+        return ({(r, c) for r in range(box_row * 3, box_row * 3 + 3) for c in range(box_col * 3, box_col * 3 + 3)} | \
+                {(row, c) for c in range(9)} | {(r, col) for r in range(9)}) - {cell}
 
-    def infer_ac3(self):
-        queue = collections.deque()
-        for arc in Sudoku.ARCS:
-            queue.append(arc)
+    def box(self, cell):
+        row, col = cell
+        box_row = row // 3
+        box_col = col // 3
+        return {(r, c) for r in range(box_row * 3, box_row * 3 + 3) for c in range(box_col * 3, box_col * 3 + 3)} - {
+            cell}
+
+    def row(self, cell):
+        return {(cell[0], c) for c in range(9)} - {cell}
+
+    def col(self, cell):
+        return {(r, cell[1]) for r in range(9)} - {cell}
+
+    def remove_extra_value(self, cell):
+        for cells in [self.box(cell), self.row(cell), self.col(cell)]:
+            for num in self.board[cell]:
+                unique = True
+                for test_cell in cells:
+                    if num in self.board[test_cell]:
+                        unique = False
+                if unique:
+                    self.board[cell] = {num}
+                    for neighbor in self.neighbor(cell):
+                        self.board[neighbor] -= {num}
+                    return True
+        return False
+
+    def infer_ac3(self, arc_queue=None):
+        if arc_queue:
+            queue = arc_queue
+        else:
+            queue = collections.deque()
+            for arc in Sudoku.ARCS:
+                queue.append(arc)
         while len(queue) != 0:
             xi, xj = queue.popleft()
             if self.remove_inconsistent_values(xi, xj):
@@ -90,13 +103,44 @@ class Sudoku(object):
                     queue.append((xk, xi))
 
     def infer_improved(self):
-        pass
+        got_anything = True
+        while got_anything:
+            got_anything = False
+            self.infer_ac3()
+            # begin improve part
+            for cell in Sudoku.CELLS:
+                if len(self.board[cell]) > 1:
+                    if self.remove_extra_value(cell):
+                        got_anything = True
 
     def infer_with_guessing(self):
         pass
 
     def __str__(self):
-        return "".join([str(next(iter(self.board[(r, c)]))) for r in range(9) for c in range(9)])
+        return self._simple_board()
+
+    def _simple_board(self):
+        return "\n".join(
+            [" ".join([str(next(iter(self.board[(r, c)]))) if len(self.board[(r, c)]) == 1 else "_" for c in range(9)])
+             for r in range(9)])
+
+    def _detail_board(self):
+        out = ""
+        for r in range(9):
+            for offset in range(0, 9, 3):
+                for c in range(9):
+                    nums = list(self.board[(r, c)])
+                    out += " ".join(str(nums[i]) if i < len(nums) else " " for i in range(offset, offset + 3)) + "|"
+                out += "\n"
+            out += "-" * 53 + "\n"
+        return out
+
+    def solved(self):
+        for r in range(9):
+            for c in range(9):
+                if len(self.board[(r, c)]) > 1:
+                    return False
+        return True
 
 
 ############################################################
