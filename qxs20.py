@@ -9,8 +9,7 @@ student_name = "Qiyi Shan"
 ############################################################
 
 # Include your imports here, if any are used.
-import collections, copy, itertools
-from timeit import timeit
+import collections
 
 
 ############################################################
@@ -130,11 +129,10 @@ class Sudoku(object):
             return False
         if self.solved():
             return True
-        else:
-            for new_board in self.successors():
-                if new_board.rec_infer():
-                    self.board = new_board.board
-                    return True
+        for new_board in self.successors():
+            if new_board.rec_infer():
+                self.board = new_board.board
+                return True
 
     def infer_with_guessing(self):
         self.rec_infer()
@@ -177,19 +175,14 @@ class KnownSudoku(Sudoku):
 ############################################################
 
 feedback_question_1 = """
-Type your response here.
-Your response may span multiple lines.
-Do not include these instructions in your response.
+12 hours
 """
 
 feedback_question_2 = """
-Type your response here.
-Your response may span multiple lines.
-Do not include these instructions in your response.
+I made a lot of dumb mistakes during coding,the section that spent most of my time is infer_improved.
+There are not extremely challenging part.
 """
 
 feedback_question_3 = """
-Type your response here.
-Your response may span multiple lines.
-Do not include these instructions in your response.
+I like infer_with_guess.
 """
